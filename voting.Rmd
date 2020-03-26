@@ -1,5 +1,5 @@
 ---
-title: "Jolly Rancheros"
+title: "Movie Picker for the Week"
 author: "Dave Gruenewald"
 date: '`r format(Sys.Date(), "%B %d, %Y")`'
 output:
@@ -8,7 +8,6 @@ output:
     toc_float: TRUE
     code_folding: hide
     theme: cerulean
-    css: styles.css
 subtitle: Quarantine is Definitely Going Well
 ---
 
@@ -19,6 +18,7 @@ library(dplyr)
 library(ggplot2)
 library(tidyr)
 library(readr)
+library(tibble)
 library(googledrive)
 library(votesys)
 library(ggridges)
@@ -33,14 +33,20 @@ sapply(file.sources, source, .GlobalEnv)
 
 ## Motivation
 
-Individuals of varying (and often suspect) taste were asked to rank watchability of movies from 1 (best) to 8 (worst).
+Individuals of varying (and possibly suspect) taste were asked to recommend and rank the watchability of movies from 1 (best) to 8 (worst).
 
-```{r, echo=FALSE}
+```{r message=FALSE, warning=FALSE, include=FALSE}
+drive_auth(email = TRUE)
+
 movie_form_savr(style = "Dumb")
 
 movie_df <- 
   movie_form_readr(style = "Dumb") %>% 
   movie_form_cleanr
+
+```
+
+```{r message=FALSE, warning=FALSE}
 
 
 movie_df %>%
@@ -264,11 +270,11 @@ movie_long_df %>%
 ```
 
 
-On down the list, you have the lesser movie critics, with indisputably irrational preferences. Timestamps are provided, but you know who you are
+On down the list, you have the lesser movie critics, with indisputably irrational preferences. Timestamps are provided to keep responses anonymous, but you know who you are...
 
 #### Sum of Squared Differences
 
-According to some, the sum of squared differences is a demonstrably poorer metric than mean absolute deviation, but we indulge the reader.
+According to some, the sum of squared differences is a demonstrably poorer metric than mean absolute deviation, but I indulge the reader.
 
 ```{r, echo = FALSE}
 movie_long_df %>%

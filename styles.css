@@ -2,6 +2,31 @@ body {
   font-family: helvetica, Arial, sans-serif;
 }
 
+h1, .h1 {
+  color: #69b3a2;
+  font-weight: bold;
+}
+
+h2, .h2 {
+  color: #69b3a2;
+  font-weight: bold;
+}
+
+h3, .h3 {
+  color: #69b3a2;
+}
+
+code {
+    border-radius: 5px; 
+    -moz-border-radius: 5px; 
+    -webkit-border-radius: 5px; 
+    border: 1px solid #BCBEC0;
+    background: #F1F3F5;
+    color: #69b3a2;
+    padding: 2px;
+    font:12px Monaco,Consolas,"Andale  Mono","DejaVu Sans Mono",monospace
+}
+
 /* ---------- Links ----------------- */
 a {
   color: #69b3a2;

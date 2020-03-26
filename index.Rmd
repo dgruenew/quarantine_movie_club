@@ -1,5 +1,5 @@
 ---
-title: "Movie Picker for the Week"
+title: "Quarantine Movie Club"
 author: "Dave Gruenewald"
 date: '`r format(Sys.Date(), "%B %d, %Y")`'
 output:
@@ -7,22 +7,28 @@ output:
     toc: TRUE
     toc_float: TRUE
     code_folding: hide
-    theme: cerulean
+    theme: darkly
+    highlight: haddock
     css: styles.css
-subtitle: Quarantine is Definitely Going Well
+subtitle: Movie Picker for the Week
 ---
+
+```{r image, echo=FALSE, fig.aling='center'}
+knitr::include_graphics("https://media.giphy.com/media/pUlXOi6PXnBGE/giphy.gif")
+```
 
 
 ```{r setup, message=FALSE, warning=FALSE, include=FALSE}
 # Load some basic libraries
 library(dplyr)
 library(ggplot2)
+library(ggdark)
+library(ggridges)
 library(tidyr)
 library(readr)
 library(tibble)
 library(googledrive)
 library(votesys)
-library(ggridges)
 library(knitr)
 library(kableExtra)
 
@@ -173,17 +179,17 @@ dodgson_df %>%
 
 #### Boxplot
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 movie_long_df %>% 
   ggplot(aes(x = movie, y = rank, 
              color = movie,
              fill = movie)) +
-  geom_boxplot(alpha = 0.2) +
+  geom_boxplot(alpha = 0.3) +
   geom_jitter(width = 0.1,
               height = 0.1) +
   scale_color_viridis_d() + 
   scale_fill_viridis_d() + 
-  theme_minimal(base_size = 16) +
+  dark_theme_gray(base_size = 16) +
   labs(x = "Movie", 
        y = "Rank") +
   coord_flip() +
@@ -201,6 +207,7 @@ movie_long_df %>%
              fill = movie)) +
   geom_density_ridges(bandwidth = 0.5, alpha = 0.2) +
   theme_ridges() +
+  dark_theme_gray(base_size = 16) +
   labs(x = "Rank", 
        y = "Movie") +
   guides(fill = FALSE,
@@ -218,13 +225,13 @@ movie_long_df %>%
 
 ```{r, echo=FALSE}
 movie_long_df %>%
-  ggplot(aes(rank, fill = movie)) + 
+  ggplot(aes(rank, fill = movie, color = movie)) + 
   geom_density(alpha = 0.3) +
   scale_color_viridis_d() + 
   scale_fill_viridis_d() + 
   facet_wrap(~ movie) +
-  theme_minimal() +
-  guides(fill = FALSE)
+  dark_theme_gray(base_size = 16) +
+  guides(fill = FALSE, color = FALSE)
 ```
 
 

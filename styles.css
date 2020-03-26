@@ -2,79 +2,80 @@ body {
   font-family: helvetica, Arial, sans-serif;
 }
 
-/*h1, .h1 {
-  color: rgb(255, 255, 255);
-  background-color: rgb(0, 156, 63);
-  font-size: 2.25rem;
-  padding: 10px;
-  border-radius: 5px;
-}
-
-h2, .h2 {
-  color: rgb(255, 255, 255);
-  background-color: rgb(0, 156, 63);
-  font-size: 2rem;
-  padding: 10px;
-  border-radius: 5px;
-}*/
-
 h1, .h1 {
-  font-family: helvetica, Arial, sans-serif;
-  color: rgb(2, 64, 105);
-  font-size: 2.25rem;
-  /*border-bottom: 5px solid rgb(0, 156, 63);
-  border-bottom-right-radius: 5px;
-  border-bottom-left-radius: 5px;*/
+  color: #69b3a2;
+  font-weight: bold;
 }
 
 h2, .h2 {
-  font-family: helvetica, Arial, sans-serif;
-  color: rgb(246, 120, 17);
-  /*border-bottom: 5px solid rgb(0, 156, 63);*/
+  color: #69b3a2;
+  font-weight: bold;
 }
-
-/*h2:after {
-  content: "";
-  float: left;
-  background: rgb(246, 120, 17);
-  width: 100%;
-  height: 5px;
-  border-radius: 2px;
-  margin-bottom: 8px;
-}*/
 
 h3, .h3 {
-  font-size: 1.75rem;
-  color: rgb(2, 64, 105);
-  font-weight: bold;
+  color: #69b3a2;
 }
 
-h1:after {
-  content: "";
-  float: left;
-  background: rgb(2, 64, 105);
-  width: 100%;
-  height: 5px;
-  border-radius: 2px;
-  margin-bottom: 8px;
+code {
+    border-radius: 5px; 
+    -moz-border-radius: 5px; 
+    -webkit-border-radius: 5px; 
+    border: 1px solid #BCBEC0;
+    background: #F1F3F5;
+    color: #69b3a2;
+    padding: 2px;
+    font:12px Monaco,Consolas,"Andale  Mono","DejaVu Sans Mono",monospace
 }
 
-h4, .h4 {
-  font-size: 1.5rem;
-  color: rgb(0, 0, 0);
-  font-weight: bold;
-  font-style: italic;
+/* ---------- Links ----------------- */
+a {
+  color: #69b3a2;
+}
+a:hover {
+  color: #69b3a2;
 }
 
-h5, .h5 {
-  font-size: 1.25rem;
-  color: rgb(0, 156, 63);
+
+/* ---------- Button ----------------- */
+.btn {
+    border-width: 0 0px 0px 0px;
+    font-weight: normal;
+    text-transform: ;
+    color: #69b3a2;
 }
+.btn-default {
+    color: #69b3a2;
+    background-color: #ffffff;
+    border-color: #ffffff;
+}
+
+.nav-pills > li.active > a, .nav-pills > li.active > a:hover, .nav-pills > li.active > a:focus {
+    background-color: #69b3a2;
+}
+
+/* ---------- Table of Contents ----- */
 
 #TOC {
-  background: url('https://media.giphy.com/media/pUlXOi6PXnBGE/giphy.gif');
+  background: url("inst/qmc.png");
   background-size: contain;
-  padding-bottom: 150px !important;
+  padding-bottom: 250px !important;
   background-position: bottom;
   background-repeat: no-repeat;
+}
+.tocify {
+  border: none;
+  color: grey;
+  border-radius: 0px;
+}
+.list-group-item.active {
+    color: #69b3a2;
+    background-color: white;
+    border-left: solid;
+    border-color: #69b3a2;
+}
+.list-group-item:hover {
+    color: #69b3a2;
+    background-color: white;
+    border-left: solid;
+    border-color: #69b3a2;
 }

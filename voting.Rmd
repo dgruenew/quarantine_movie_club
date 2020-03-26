@@ -1,0 +1,283 @@
+---
+title: "Jolly Rancheros"
+author: "Dave Gruenewald"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+output:
+  html_document:
+    toc: TRUE
+    toc_float: TRUE
+    code_folding: hide
+    theme: cerulean
+    css: styles.css
+subtitle: Quarantine is Definitely Going Well
+---
+
+
+```{r setup, message=FALSE, warning=FALSE, include=FALSE}
+# Load some basic libraries
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(readr)
+library(googledrive)
+library(votesys)
+library(ggridges)
+library(knitr)
+library(kableExtra)
+
+file.sources = list.files("R/", 
+                          pattern = "*.R$", full.names = TRUE, 
+                          ignore.case = TRUE)
+sapply(file.sources, source, .GlobalEnv)
+```
+
+## Motivation
+
+Individuals of varying (and often suspect) taste were asked to rank watchability of movies from 1 (best) to 8 (worst).
+
+```{r, echo=FALSE}
+movie_form_savr(style = "Dumb")
+
+movie_df <- 
+  movie_form_readr(style = "Dumb") %>% 
+  movie_form_cleanr
+
+
+movie_df %>%
+  kable() %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+                full_width = F)
+```
+
+## Movies
+
+### Overall Likeability
+
+Which movies had the highest average rank? 
+
+```{r, echo=FALSE}
+movie_long_df <- movie_df %>% 
+  pivot_longer(
+    cols = -Timestamp,
+    names_to = "movie",
+    values_to = "rank"
+  )
+
+movie_long_mean <- movie_long_df %>%
+  group_by(movie) %>%
+  summarise(mean = mean(rank)) %>% 
+  arrange(mean)
+
+movie_long_mean %>% 
+  kable() %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+                full_width = F)
+```
+
+**`r movie_long_mean %>% slice(1) %>% pull(movie) %>% as.character()`** appears to be universally appreciated, while **`r movie_long_mean %>% arrange(desc(mean)) %>% slice(1) %>% pull(movie) %>% as.character()`** is clearly foul.
+
+### Other Voting Metrics {.tabset .tabset-fade .tabset-pills}
+
+```{r, message=FALSE}
+vote <- movie_df %>% 
+  as.data.frame() %>% 
+  column_to_rownames(var = "Timestamp") %>% 
+  as.matrix() %>% 
+  create_vote(xtype = 1)
+
+approval <- approval_method(vote, n = 3)
+borda <- borda_method(vote)
+copeland <- cdc_copeland(vote)
+dodgson <- cdc_dodgson(vote, dq_t = "t")
+
+borda_df <- borda$other_info$count_min %>% 
+  data.frame() %>% 
+  rownames_to_column("Movie") %>% 
+  rename(Rank = 2) %>% 
+  arrange(Rank)
+
+copeland_df <- copeland$other_info$copeland_score %>% 
+  data.frame() %>% 
+  rownames_to_column("Movie") %>% 
+  rename(Rank = 2) %>% 
+  arrange(desc(Rank))
+
+dodgson_df <- dodgson$other_info$tideman %>% 
+  data.frame() %>% 
+  rownames_to_column("Movie") %>% 
+  rename(Rank = 2) %>% 
+  arrange(Rank)
+
+```
+
+#### Borda Method
+
+> A voter’s 1st choice gets 1 point, the 2nd choice gets 2 points...
+The movie with the smallest total score wins. The function does not require voters to assign scores to all Movies, for NAs are automatically assigned the highest (worst) score. Duplicated values (two or more movies share the same score) are also allowed.
+
+**Borda Winner:** `r borda$winner`
+
+```{r}
+borda_df %>% 
+  kable() %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+                full_width = F)
+```
+
+#### Copeland
+
+> Movies enter into pairwise comparison. If the number of voters who prefer `Movie A` is larger than the number of voters who prefer `Movie B` , then `Movie A` wins `Movie B`, `Movie A` gets 1 point, and `Movie B` gets -1 point. If the numbers are equal, then both of them gets 0 point. Then, sum up each one’s comparison points. For example, `Movie A` wins 3 times, loses 1 time, has equal votes with 2 other movies, `Movie A`'s score is 3 \* 1 + (-1) \* 1 + 0 * 2 = 2. The movie that gets the most points wins.
+
+**Copeland Winner:** `r copeland$winner`
+
+```{r}
+copeland_df %>% 
+  kable() %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+                full_width = F)
+```
+
+#### Dodgson (Tideman Score) Method
+
+> Suppose the candidates are `Paul Blart: Mall Cop 2`, `Casablanca`, `Howard the Duck` and
+`Citizen Kane`. 
+If `Paul Blart: Mall Cop 2` wins `Casablanca` in pairwise comparison or has equal votes
+with `Casablanca`, then add 0 to `Paul Blart: Mall Cop 2`. If `Howard the Duck` wins
+`Paul Blart: Mall Cop 2`, then add to `Paul Blart: Mall Cop 2` adv(`Howard the Duck`, `Paul Blart: Mall Cop 2`), 
+that is, the number of voters that prefer `Howard the Duck` than `Paul Blart: Mall Cop 2`, minus 
+the number of voters that prefer `Paul Blart: Mall Cop 2` than `Howard the Duck`. Again, 
+if `Citizen Kane` wins `Paul Blart: Mall Cop 2`, then add to `Paul Blart: Mall Cop 2` that number. 
+Then, we sum up the points that belong to `Paul Blart: Mall Cop 2`. We do the same 
+thing to `Casablanca`, `Howard the Duck` and `Citizen Kane`. The
+one gets the least points is the winner.
+
+**Dodgson Winner:** `r dodgson$winner`
+
+```{r}
+dodgson_df %>% 
+  kable() %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+                full_width = F)
+```
+
+
+
+### Visualization {.tabset .tabset-fade .tabset-pills}
+
+#### Boxplot
+
+```{r}
+movie_long_df %>% 
+  ggplot(aes(x = movie, y = rank, 
+             color = movie,
+             fill = movie)) +
+  geom_boxplot(alpha = 0.2) +
+  geom_jitter(width = 0.1,
+              height = 0.1) +
+  scale_color_viridis_d() + 
+  scale_fill_viridis_d() + 
+  theme_minimal(base_size = 16) +
+  labs(x = "Movie", 
+       y = "Rank") +
+  coord_flip() +
+  guides(fill = FALSE,
+         color = FALSE)
+```
+
+
+#### Ridgeline Plot
+
+```{r}
+movie_long_df %>% 
+  ggplot(aes(y = movie, x = rank, 
+             color = movie,
+             fill = movie)) +
+  geom_density_ridges(bandwidth = 0.5, alpha = 0.2) +
+  theme_ridges() +
+  labs(x = "Movie", 
+       y = "Rank") +
+  guides(fill = FALSE,
+         color = FALSE) +
+  scale_color_viridis_d() + 
+  scale_fill_viridis_d() + 
+  scale_x_continuous(
+    expand = c(0.01, 0), 
+    breaks = 1:length(unique(movie_long_df$movie))
+  )
+```
+
+
+#### Density Curve
+
+```{r, echo=FALSE}
+movie_long_df %>%
+  ggplot(aes(rank, fill = movie)) + 
+  geom_density(alpha = 0.3) +
+  scale_color_viridis_d() + 
+  scale_fill_viridis_d() + 
+  facet_wrap(~ movie) +
+  theme_minimal() +
+  guides(fill = FALSE)
+```
+
+
+### Controversial
+
+What about the highest variance? 
+
+```{r, echo=FALSE}
+movie_long_df %>%
+  group_by(movie) %>%
+  summarise(stan_dev = sd(rank)) %>% 
+  arrange(desc(stan_dev)) %>%
+  kable() %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+                full_width = F)
+```
+
+
+## Watchers
+
+Who are the film critics, whom all others follow? 
+Who are the freaks? 
+
+We define 2 measures of watching preference, *mean absolute difference* and the *sum of squared differences*.
+
+#### Mean Absolute Difference
+
+We take the average distance of each cinema-goer's rank for a given movie from that movie's sample mean.
+
+```{r, echo=FALSE}
+movie_means <- movie_long_df %>%
+  group_by(movie) %>%
+  summarise(mean = mean(rank))
+
+movie_long_df %>%
+  inner_join(movie_means, by = "movie") %>%
+  mutate(abs_diff = abs(rank - mean)) %>%
+  group_by(Timestamp) %>%
+  summarise(mean_abs_diff = mean(abs_diff)) %>%
+  arrange(mean_abs_diff) %>%
+  kable() %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+                full_width = F)
+```
+
+
+On down the list, you have the lesser movie critics, with indisputably irrational preferences. Timestamps are provided, but you know who you are
+
+#### Sum of Squared Differences
+
+According to some, the sum of squared differences is a demonstrably poorer metric than mean absolute deviation, but we indulge the reader.
+
+```{r, echo = FALSE}
+movie_long_df %>%
+  inner_join(movie_means, by = "movie") %>%
+  mutate(sqrd_diff = (rank - mean)^2) %>%
+  group_by(Timestamp) %>%
+  summarise(sum_sqrd_diff = sum(sqrd_diff)) %>%
+  arrange(sum_sqrd_diff) %>%
+  kable() %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+                full_width = F)
+```

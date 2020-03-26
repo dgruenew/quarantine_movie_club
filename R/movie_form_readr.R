@@ -33,7 +33,6 @@ movie_form_savr <- function(style, number = NULL, n_max = 50){
   )
 }
 
-movie_form_savr(style = "Dumb")
 
 
 movie_form_readr <- function(style, number = NULL) {
@@ -57,8 +56,13 @@ movie_form_readr <- function(style, number = NULL) {
     readr::read_csv()
 }
 
-movie_form_readr(style = "Dumb")
-
+movie_form_cleanr <- function(data) {
+  data %>% 
+    dplyr::rename_at(
+      dplyr::vars(contains("[")),
+      ~stringr::str_extract(.x, "(?<=\\[).*(?=\\])")
+    )
+}
 
 
   

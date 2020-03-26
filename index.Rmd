@@ -8,6 +8,7 @@ output:
     toc_float: TRUE
     code_folding: hide
     theme: cerulean
+    css: styles.css
 subtitle: Quarantine is Definitely Going Well
 ---
 
@@ -33,7 +34,7 @@ sapply(file.sources, source, .GlobalEnv)
 
 ## Motivation
 
-Individuals of varying (and possibly suspect) taste were asked to recommend and rank the watchability of movies from 1 (best) to 8 (worst).
+Individuals of varying (and possibly suspect) taste were asked to recommend and rank the watchability of movies from 1 (best) to 8 (worst).  Also I'm bored as shit, so let's do this...
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
 drive_auth(email = TRUE)
@@ -200,8 +201,8 @@ movie_long_df %>%
              fill = movie)) +
   geom_density_ridges(bandwidth = 0.5, alpha = 0.2) +
   theme_ridges() +
-  labs(x = "Movie", 
-       y = "Rank") +
+  labs(x = "Rank", 
+       y = "Movie") +
   guides(fill = FALSE,
          color = FALSE) +
   scale_color_viridis_d() + 

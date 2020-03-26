@@ -2,10 +2,55 @@ body {
   font-family: helvetica, Arial, sans-serif;
 }
 
+/* ---------- Links ----------------- */
+a {
+  color: #69b3a2;
+}
+a:hover {
+  color: #69b3a2;
+}
+
+
+/* ---------- Button ----------------- */
+.btn {
+    border-width: 0 0px 0px 0px;
+    font-weight: normal;
+    text-transform: ;
+    color: #69b3a2;
+}
+.btn-default {
+    color: #69b3a2;
+    background-color: #ffffff;
+    border-color: #ffffff;
+}
+
+.nav-pills > li.active > a, .nav-pills > li.active > a:hover, .nav-pills > li.active > a:focus {
+    background-color: #69b3a2;
+}
+
+/* ---------- Table of Contents ----- */
+
 #TOC {
   background: url("inst/qmc.png");
   background-size: contain;
   padding-bottom: 250px !important;
   background-position: bottom;
   background-repeat: no-repeat;
+}
+.tocify {
+  border: none;
+  color: grey;
+  border-radius: 0px;
+}
+.list-group-item.active {
+    color: #69b3a2;
+    background-color: white;
+    border-left: solid;
+    border-color: #69b3a2;
+}
+.list-group-item:hover {
+    color: #69b3a2;
+    background-color: white;
+    border-left: solid;
+    border-color: #69b3a2;
 }

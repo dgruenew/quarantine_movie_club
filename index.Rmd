@@ -8,6 +8,7 @@ output:
     toc_float: TRUE
     code_folding: hide
     theme: darkly
+    highlight: haddock
     css: styles.css
 subtitle: Movie Picker for the Week
 ---

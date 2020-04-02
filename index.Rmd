@@ -45,10 +45,10 @@ Individuals of varying (and possibly suspect) taste were asked to recommend and 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
 drive_auth(email = TRUE)
 
-movie_form_savr(style = "Dumb")
+movie_form_savr(style = "Highbrow")
 
 movie_df <- 
-  movie_form_readr(style = "Dumb") %>% 
+  movie_form_readr(style = "Highbrow") %>% 
   movie_form_cleanr
 
 ```

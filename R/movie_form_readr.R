@@ -1,17 +1,14 @@
-movie_form_savr <- function(style, number = NULL, n_max = 50){
+movie_form_savr <- function(number = NULL, n_max = 50){
   drive_file <-
     googledrive::drive_find(
       pattern = "Quarantine",
       type = "spreadsheet",
       n_max = n_max
     ) %>% 
-    dplyr::filter(
-      stringr::str_detect(
-        name, style
-      )
-    ) %>% 
     {if (is.null(number)) {
-      dplyr::arrange(., dplyr::desc(name)) %>%
+      dplyr::arrange(., dplyr::desc(
+        stringr::str_extract(name, "\\d+")
+        )) %>%
         dplyr::slice(1)
     } else {
       dplyr::filter(
@@ -26,7 +23,6 @@ movie_form_savr <- function(style, number = NULL, n_max = 50){
     file = drive_file,
     path = paste0(
       "data/q",
-      stringr::str_to_lower(style),
       stringr::str_extract(drive_file$name, "\\d+")
     ),
     type = "csv",
@@ -34,23 +30,24 @@ movie_form_savr <- function(style, number = NULL, n_max = 50){
   )
 }
 
-movie_form_readr <- function(style, number = NULL) {
-  list.files("data/", full.names = TRUE) %>% 
-    stringr::str_subset(
-      stringr::str_to_lower(style)
+movie_form_readr <- function(number = NULL) {
+  tibble::tibble(
+    data = list.files("data/", full.names = TRUE)
+  ) %>% 
+    dplyr::mutate(
+      id = stringr::str_extract(data, "\\d+") %>% 
+        as.numeric()
     ) %>% 
     {if (is.null(number)) {
-      stringr::str_sort(
-        ., decreasing = TRUE, numeric = TRUE
-      )
+      dplyr::arrange(., desc(id))
     } else {
       stringr::str_subset(
         ., paste0(
-          stringr::str_to_lower(style),
           number, ".csv")
       )
     }
     } %>% 
+    dplyr::pull(data) %>% 
     dplyr::first() %>% 
     readr::read_csv()
 }
@@ -62,6 +59,9 @@ movie_form_cleanr <- function(data) {
       ~stringr::str_extract(.x, "(?<=\\[).*(?=\\])")
     )
 }
+
+tibble(data = list.files("data/", full.names = TRUE))
+list.files("data/", full.names = TRUE)
 
 
   

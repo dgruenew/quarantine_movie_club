@@ -60,8 +60,8 @@ movie_form_cleanr <- function(data) {
     )
 }
 
-tibble(data = list.files("data/", full.names = TRUE))
-list.files("data/", full.names = TRUE)
+# tibble(data = list.files("data/", full.names = TRUE))
+# list.files("data/", full.names = TRUE)
 
 
   

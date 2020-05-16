@@ -6,8 +6,12 @@ movie_form_savr <- function(number = NULL, n_max = 50){
       n_max = n_max
     ) %>% 
     {if (is.null(number)) {
+      dplyr::mutate(., 
+        num = stringr::str_extract(name, "\\d+") %>% 
+          as.numeric()
+      ) %>% 
       dplyr::arrange(., dplyr::desc(
-        stringr::str_extract(name, "\\d+")
+        num
         )) %>%
         dplyr::slice(1)
     } else {

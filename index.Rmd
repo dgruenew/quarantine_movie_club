@@ -75,11 +75,12 @@ imdb_df <-
 imdb_df %>% 
   mutate(
     imdbVotes = parse_number(imdbVotes),
-    Metascore = parse_number(Metascore)) %>% 
+    Metascore = parse_number(Metascore),
+    imdbRating = parse_number(imdbRating)) %>% 
   ggplot(
     aes(
-      x = fct_reorder(Title, Metascore, .desc = TRUE),
-      y = Metascore
+      x = fct_reorder(Title, imdbRating, .desc = TRUE),
+      y = imdbRating
     )
   ) +
   # geom_col()
@@ -97,7 +98,7 @@ imdb_df %>%
     guide = guide_axis(n.dodge = 2)
   ) +
   labs(x = NULL, 
-       y = "IMDB Metascore") + 
+       y = "IMDB Rating") + 
   theme(axis.title = element_text(colour = "#69b3a2"))
 
 

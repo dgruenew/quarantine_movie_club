@@ -5,20 +5,17 @@ movie_form_savr <- function(number = NULL, n_max = 50){
       type = "spreadsheet",
       n_max = n_max
     ) %>% 
+    dplyr::mutate(
+      num = stringr::str_extract(name, "\\d+") %>% 
+        as.numeric()
+    ) %>% 
+    dplyr::arrange(dplyr::desc(num)) %>% 
     {if (is.null(number)) {
-      dplyr::mutate(., 
-        num = stringr::str_extract(name, "\\d+") %>% 
-          as.numeric()
-      ) %>% 
-      dplyr::arrange(., dplyr::desc(
-        num
-        )) %>%
-        dplyr::slice(1)
+      dplyr::slice(., 1)
     } else {
       dplyr::filter(
-        ., stringr::str_detect(
-          name, paste0("#", number, " \\(Responses\\)")
-        )
+        .,
+        num == number
       )
     }
     }
@@ -45,9 +42,10 @@ movie_form_readr <- function(number = NULL) {
     {if (is.null(number)) {
       dplyr::arrange(., desc(id))
     } else {
-      stringr::str_subset(
-        ., paste0(
-          number, ".csv")
+      dplyr::filter(
+        ., 
+        data == paste0(
+          "data/q", number, ".csv")
       )
     }
     } %>% 
@@ -67,5 +65,3 @@ movie_form_cleanr <- function(data) {
 # tibble(data = list.files("data/", full.names = TRUE))
 # list.files("data/", full.names = TRUE)
 
-
-  

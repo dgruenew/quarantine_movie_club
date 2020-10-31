@@ -11,12 +11,14 @@ output:
     highlight: haddock
     css: styles.css
 subtitle: Movie Picker for the Week
+editor_options: 
+  markdown: 
+    wrap: 72
 ---
 
 ```{r image, echo=FALSE, fig.aling='center'}
 knitr::include_graphics("https://media.giphy.com/media/pUlXOi6PXnBGE/giphy.gif")
 ```
-
 
 ```{r setup, message=FALSE, warning=FALSE, include=FALSE}
 # Load some basic libraries
@@ -44,7 +46,9 @@ sapply(file.sources, source, .GlobalEnv)
 
 ## Motivation
 
-Individuals of varying (and possibly suspect) taste were asked to recommend and rank the watchability of movies from 1 (best) to 8 (worst).  Also I'm bored as shit, so let's do this...
+Individuals of varying (and possibly suspect) taste were asked to
+recommend and rank the watchability of movies from 1 (hard pass) to 10
+(must watch now). Also I'm bored as shit, so let's do this...
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
 drive_auth(email = TRUE)
@@ -76,7 +80,8 @@ imdb_df %>%
   mutate(
     imdbVotes = parse_number(imdbVotes),
     Metascore = parse_number(Metascore),
-    imdbRating = parse_number(imdbRating)) %>% 
+    imdbRating = parse_number(imdbRating)
+  ) %>% 
   ggplot(
     aes(
       x = fct_reorder(Title, imdbRating, .desc = TRUE),
@@ -85,7 +90,8 @@ imdb_df %>%
   ) +
   # geom_col()
   geom_col_pattern(
-    aes(pattern_filename = I(Posterlink)),
+    aes(
+      pattern_filename = I(Posterlink)),
     pattern_gravity = "North",
     pattern         = "image",
     pattern_scale   = 1, 
@@ -122,20 +128,21 @@ movie_df %>%
 
 ### Overall Likeability
 
-Which movies had the highest average rank? 
+Which movies had the highest average score?
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 movie_long_df <- movie_df %>% 
   pivot_longer(
     cols = -Timestamp,
     names_to = "movie",
-    values_to = "rank"
+    values_to = "vote"
   )
 
 movie_long_mean <- movie_long_df %>%
   group_by(movie) %>%
-  summarise(mean = mean(rank)) %>% 
-  arrange(mean)
+  summarise(mean = mean(vote),
+            .groups = "drop") %>% 
+  arrange(desc(mean))
 
 movie_long_mean %>% 
   kable() %>%
@@ -143,12 +150,21 @@ movie_long_mean %>%
                 full_width = F)
 ```
 
-**`r movie_long_mean %>% slice(1) %>% pull(movie) %>% as.character()`** appears to be universally appreciated, while **`r movie_long_mean %>% arrange(desc(mean)) %>% slice(1) %>% pull(movie) %>% as.character()`** is clearly foul.
+**`r movie_long_mean %>% slice(1) %>% pull(movie) %>% as.character()`**
+appears to be universally appreciated, while
+**`r movie_long_mean %>% arrange(mean) %>% slice(1) %>% pull(movie) %>% as.character()`**
+is clearly foul.
 
 ### Other Voting Metrics {.tabset .tabset-fade .tabset-pills}
 
 ```{r, message=FALSE}
 vote <- movie_df %>% 
+  mutate(
+    across(
+      where(is.numeric),
+      ~flip_convert(.x)
+    )
+  ) %>% 
   as.data.frame() %>% 
   column_to_rownames(var = "Timestamp") %>% 
   as.matrix() %>% 
@@ -181,8 +197,11 @@ dodgson_df <- dodgson$other_info$tideman %>%
 
 #### Borda Method
 
-> A voter’s 1st choice gets 1 point, the 2nd choice gets 2 points...
-The movie with the smallest total score wins. The function does not require voters to assign scores to all Movies, for NAs are automatically assigned the highest (worst) score. Duplicated values (two or more movies share the same score) are also allowed.
+> A voter's 1st choice gets 1 point, the 2nd choice gets 2 points... The
+> movie with the smallest total score wins. The function does not
+> require voters to assign scores to all Movies, for NAs are
+> automatically assigned the highest (worst) score. Duplicated values
+> (two or more movies share the same score) are also allowed.
 
 **Borda Winner:** `r borda$winner`
 
@@ -195,7 +214,14 @@ borda_df %>%
 
 #### Copeland
 
-> Movies enter into pairwise comparison. If the number of voters who prefer `Movie A` is larger than the number of voters who prefer `Movie B` , then `Movie A` wins `Movie B`, `Movie A` gets 1 point, and `Movie B` gets -1 point. If the numbers are equal, then both of them gets 0 point. Then, sum up each one’s comparison points. For example, `Movie A` wins 3 times, loses 1 time, has equal votes with 2 other movies, `Movie A`'s score is 3 \* 1 + (-1) \* 1 + 0 * 2 = 2. The movie that gets the most points wins.
+> Movies enter into pairwise comparison. If the number of voters who
+> prefer `Movie A` is larger than the number of voters who prefer
+> `Movie B` , then `Movie A` wins `Movie B`, `Movie A` gets 1 point, and
+> `Movie B` gets -1 point. If the numbers are equal, then both of them
+> gets 0 point. Then, sum up each one's comparison points. For example,
+> `Movie A` wins 3 times, loses 1 time, has equal votes with 2 other
+> movies, `Movie A`'s score is 3 \* 1 + (-1) \* 1 + 0 \* 2 = 2. The
+> movie that gets the most points wins.
 
 **Copeland Winner:** `r copeland$winner`
 
@@ -208,17 +234,20 @@ copeland_df %>%
 
 #### Dodgson (Tideman Score) Method
 
-> Suppose the candidates are `Paul Blart: Mall Cop 2`, `Casablanca`, `Howard the Duck` and
-`Citizen Kane`. 
-If `Paul Blart: Mall Cop 2` wins `Casablanca` in pairwise comparison or has equal votes
-with `Casablanca`, then add 0 to `Paul Blart: Mall Cop 2`. If `Howard the Duck` wins
-`Paul Blart: Mall Cop 2`, then add to `Paul Blart: Mall Cop 2` adv(`Howard the Duck`, `Paul Blart: Mall Cop 2`), 
-that is, the number of voters that prefer `Howard the Duck` than `Paul Blart: Mall Cop 2`, minus 
-the number of voters that prefer `Paul Blart: Mall Cop 2` than `Howard the Duck`. Again, 
-if `Citizen Kane` wins `Paul Blart: Mall Cop 2`, then add to `Paul Blart: Mall Cop 2` that number. 
-Then, we sum up the points that belong to `Paul Blart: Mall Cop 2`. We do the same 
-thing to `Casablanca`, `Howard the Duck` and `Citizen Kane`. The
-one gets the least points is the winner.
+> Suppose the candidates are `Paul Blart: Mall Cop 2`, `Casablanca`,
+> `Howard the Duck` and `Citizen Kane`. If `Paul Blart: Mall Cop 2` wins
+> `Casablanca` in pairwise comparison or has equal votes with
+> `Casablanca`, then add 0 to `Paul Blart: Mall Cop 2`. If
+> `Howard the Duck` wins `Paul Blart: Mall Cop 2`, then add to
+> `Paul Blart: Mall Cop 2` adv(`Howard the Duck`,
+> `Paul Blart: Mall Cop 2`), that is, the number of voters that prefer
+> `Howard the Duck` than `Paul Blart: Mall Cop 2`, minus the number of
+> voters that prefer `Paul Blart: Mall Cop 2` than `Howard the Duck`.
+> Again, if `Citizen Kane` wins `Paul Blart: Mall Cop 2`, then add to
+> `Paul Blart: Mall Cop 2` that number. Then, we sum up the points that
+> belong to `Paul Blart: Mall Cop 2`. We do the same thing to
+> `Casablanca`, `Howard the Duck` and `Citizen Kane`. The one gets the
+> least points is the winner.
 
 **Dodgson Winner:** `r dodgson$winner`
 
@@ -229,17 +258,21 @@ dodgson_df %>%
                 full_width = F)
 ```
 
-
-
 ### Visualization {.tabset .tabset-fade .tabset-pills}
 
 #### Boxplot
 
 ```{r message=FALSE, warning=FALSE}
 movie_long_df %>% 
-  ggplot(aes(x = movie, y = rank, 
-             color = movie,
-             fill = movie)) +
+  mutate(movie = factor(movie, levels = rev(movie_long_mean$movie))) %>% 
+  ggplot(
+    aes(
+      x = movie, 
+      y = vote, 
+      color = movie,
+      fill = movie
+    )
+  ) +
   geom_boxplot(alpha = 0.3) +
   geom_jitter(width = 0.1,
               height = 0.1) +
@@ -253,12 +286,12 @@ movie_long_df %>%
          color = FALSE)
 ```
 
-
 #### Ridgeline Plot
 
 ```{r}
 movie_long_df %>% 
-  ggplot(aes(y = movie, x = rank, 
+  mutate(movie = factor(movie, levels = rev(movie_long_mean$movie))) %>% 
+  ggplot(aes(y = movie, x = vote, 
              color = movie,
              fill = movie)) +
   geom_density_ridges(bandwidth = 0.5, alpha = 0.2) +
@@ -276,12 +309,12 @@ movie_long_df %>%
   )
 ```
 
-
 #### Density Curve
 
 ```{r, echo=FALSE}
 movie_long_df %>%
-  ggplot(aes(rank, fill = movie, color = movie)) + 
+  mutate(movie = factor(movie, levels = rev(movie_long_mean$movie))) %>% 
+  ggplot(aes(vote, fill = movie, color = movie)) + 
   geom_density(alpha = 0.3) +
   scale_color_viridis_d() + 
   scale_fill_viridis_d() + 
@@ -290,62 +323,67 @@ movie_long_df %>%
   guides(fill = FALSE, color = FALSE)
 ```
 
-
 ### Controversial
 
-What about the highest variance? 
+What about the highest variance?
 
 ```{r, echo=FALSE}
 movie_long_df %>%
   group_by(movie) %>%
-  summarise(stan_dev = sd(rank)) %>% 
+  summarise(stan_dev = sd(vote),
+            .groups = "drop") %>% 
   arrange(desc(stan_dev)) %>%
   kable() %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"),
                 full_width = F)
 ```
 
-
 ## Watchers
 
-Who are the film critics, whom all others follow? 
-Who are the freaks? 
+Who are the film critics, whom all others follow? Who are the freaks?
 
-We define 2 measures of watching preference, *mean absolute difference* and the *sum of squared differences*.
+We define 2 measures of watching preference, *mean absolute difference*
+and the *sum of squared differences*.
 
 #### Mean Absolute Difference
 
-We take the average distance of each cinema-goer's rank for a given movie from that movie's sample mean.
+We take the average distance of each cinema-goer's rank for a given
+movie from that movie's sample mean.
 
 ```{r, echo=FALSE}
 movie_means <- movie_long_df %>%
   group_by(movie) %>%
-  summarise(mean = mean(rank))
+  summarise(mean = mean(vote),
+            .groups = "drop")
 
 movie_long_df %>%
   inner_join(movie_means, by = "movie") %>%
-  mutate(abs_diff = abs(rank - mean)) %>%
+  mutate(abs_diff = abs(vote - mean)) %>%
   group_by(Timestamp) %>%
-  summarise(mean_abs_diff = mean(abs_diff)) %>%
+  summarise(mean_abs_diff = mean(abs_diff),
+            .groups = "drop") %>%
   arrange(mean_abs_diff) %>%
   kable() %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"),
                 full_width = F)
 ```
 
-
-On down the list, you have the lesser movie critics, with indisputably irrational preferences. Timestamps are provided to keep responses anonymous, but you know who you are...
+On down the list, you have the lesser movie critics, with indisputably
+irrational preferences. Timestamps are provided to keep responses
+anonymous, but you know who you are...
 
 #### Sum of Squared Differences
 
-According to some, the sum of squared differences is a demonstrably poorer metric than mean absolute deviation, but I indulge the reader.
+According to some, the sum of squared differences is a demonstrably
+poorer metric than mean absolute deviation, but I indulge the reader.
 
 ```{r, echo = FALSE}
 movie_long_df %>%
   inner_join(movie_means, by = "movie") %>%
-  mutate(sqrd_diff = (rank - mean)^2) %>%
+  mutate(sqrd_diff = (vote - mean)^2) %>%
   group_by(Timestamp) %>%
-  summarise(sum_sqrd_diff = sum(sqrd_diff)) %>%
+  summarise(sum_sqrd_diff = sum(sqrd_diff),
+            .groups = "drop") %>%
   arrange(sum_sqrd_diff) %>%
   kable() %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"),

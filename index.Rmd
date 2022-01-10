@@ -73,6 +73,7 @@ movie_v <-
 
 imdb_df <- 
   movie_v %>% 
+  stringr::str_remove("\\s\\(\\d*\\)") %>% 
   map_dfr(imdbMovies) %>% 
   as_tibble()
 
@@ -282,8 +283,8 @@ movie_long_df %>%
   labs(x = "Movie", 
        y = "Rank") +
   coord_flip() +
-  guides(fill = FALSE,
-         color = FALSE)
+  guides(fill = "none",
+         color = "none")
 ```
 
 #### Ridgeline Plot
@@ -299,8 +300,8 @@ movie_long_df %>%
   dark_theme_gray(base_size = 16) +
   labs(x = "Rank", 
        y = "Movie") +
-  guides(fill = FALSE,
-         color = FALSE) +
+  guides(fill = "none",
+         color = "none") +
   scale_color_viridis_d() + 
   scale_fill_viridis_d() + 
   scale_x_continuous(
@@ -320,7 +321,7 @@ movie_long_df %>%
   scale_fill_viridis_d() + 
   facet_wrap(~ movie) +
   dark_theme_gray(base_size = 16) +
-  guides(fill = FALSE, color = FALSE)
+  guides(fill = "none", color = "none")
 ```
 
 ### Controversial

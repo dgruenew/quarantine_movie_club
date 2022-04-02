@@ -386,6 +386,7 @@ movie_long_df %>%
   summarise(sum_sqrd_diff = sum(sqrd_diff),
             .groups = "drop") %>%
   arrange(sum_sqrd_diff) %>%
+  rename(`Sum Squared Difference` = sum_sqrd_diff) %>% 
   kable() %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"),
                 full_width = F)

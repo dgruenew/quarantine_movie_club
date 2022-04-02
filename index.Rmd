@@ -385,7 +385,9 @@ movie_long_df %>%
   group_by(Timestamp) %>%
   summarise(sum_sqrd_diff = sum(sqrd_diff),
             .groups = "drop") %>%
+  identity() %>% 
   arrange(sum_sqrd_diff) %>%
+  identity() %>% 
   kable() %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"),
                 full_width = F)
